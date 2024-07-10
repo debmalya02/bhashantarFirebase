@@ -37,7 +37,6 @@ const Docs = () => {
       try {
         const projectFiles = await fetchProjectFiles(projectId);
         const projectName = await fetchProjectName(projectId);
-        // Filter files to only show those with status 2
         const filteredFiles = projectFiles.filter(file => file.status === 2);
         setFiles(filteredFiles);
         setProjectName(projectName);
@@ -68,10 +67,9 @@ const Docs = () => {
   };
 
   const handleEditClick = async (id) => {
-    console.log('Edit/Assign file with ID:', id);
     try {
-      await updateFileStatus(projectId, id, 3, currentUser.uid); // Update status to 3 and assign to current user
-      setFiles(files.filter(file => file.id !== id)); // Remove the file from the current display
+      await updateFileStatus(projectId, id, 3, currentUser.uid);
+      setFiles(files.filter(file => file.id !== id));
     } catch (err) {
       console.error('Error updating file status:', err);
       setError(err);

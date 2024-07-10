@@ -9,6 +9,7 @@ import TablePagination from '@mui/material/TablePagination';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import MuiTable from '@mui/material/Table';
+import { useNavigate } from 'react-router-dom';
 
 function Table2({
   columns,
@@ -17,9 +18,14 @@ function Table2({
   rowsPerPage,
   handleChangePage,
   handleChangeRowsPerPage,
-  handleEditClick,
-  projectName = 'Unknown Project', // Default value
 }) {
+  const navigate = useNavigate();
+
+  const handleEditClick = (projectId, fileId) => {
+    const documentId = `${projectId}_${fileId}`; // Concatenate projectId and fileId with an underscore
+    console.log('Navigating to editor with document ID:', documentId); // Debugging log
+    navigate(`/editor/${documentId}`);
+  };
   return (
     <div>
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -51,7 +57,7 @@ function Table2({
                             <Button
                               variant="contained"
                               color="primary"
-                              onClick={() => handleEditClick && handleEditClick(row.id)}
+                              onClick={() => handleEditClick(row.projectId, row.id)}
                             >
                               Edit
                             </Button>
@@ -96,14 +102,10 @@ Table2.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
   handleChangePage: PropTypes.func.isRequired,
   handleChangeRowsPerPage: PropTypes.func.isRequired,
-  handleEditClick: PropTypes.func,
-  projectName: PropTypes.string.isRequired,
 };
 
 Table2.defaultProps = {
   rows: [],
-  handleEditClick: null,
-  projectName: 'Unknown Project', // Default value
 };
 
 export default Table2;

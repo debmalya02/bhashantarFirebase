@@ -26,9 +26,14 @@ export const uploadFile = async (projectId, file) => {
 // Fetch files for a specific project
 export const fetchProjectFiles = async (projectId) => {
   try {
-    const filesSnapshot = await getDocs(collection(db, 'projects', projectId, 'files'));
+    console.log(`Fetching files for projectId: ${projectId}`); // Debugging log
+    const filesCollection = collection(db, 'projects', projectId, 'files');
+    const filesSnapshot = await getDocs(filesCollection);
+    console.log(`filesSnapshot size: ${filesSnapshot.size}`); // Debugging log
+
     const files = filesSnapshot.docs.map(doc => {
       const data = doc.data();
+      console.log(`File data for doc ID ${doc.id}:`, data); // Debugging log
       return {
         id: doc.id,
         name: data.name,
@@ -38,6 +43,8 @@ export const fetchProjectFiles = async (projectId) => {
         assignedTo: data.assignedTo || null // Ensure assignedTo field is included
       };
     });
+
+    console.log(`Fetched files for projectId ${projectId}:`, files); // Debugging log
     return files;
   } catch (error) {
     console.error('Error fetching project files:', error);
@@ -60,6 +67,23 @@ export const fetchProjectName = async (projectId) => {
     throw new Error('Error fetching project name');
   }
 };
+ 
+export const fetchDocumentUrl = async (projectId, fileId) => {
+  try {
+    const fileDocRef = doc(db, 'projects', projectId, 'files', fileId);
+    const fileDoc = await getDoc(fileDocRef);
+
+    if (fileDoc.exists()) {
+      return fileDoc.data().url;
+    } else {
+      throw new Error('File does not exist');
+    }
+  } catch (error) {
+    console.error('Error fetching document URL:', error);
+    throw new Error('Error fetching document URL');
+  }
+};
+
 
 // Update the status of a specific file
 export const updateFileStatus = async (projectId, fileId, status, userId) => {

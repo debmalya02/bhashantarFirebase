@@ -102,7 +102,7 @@
 // export default App;
 
 
-import React from "react";
+import {React, useEffect} from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -112,9 +112,14 @@ import UserHome from "./Pages/Users/UserHome"
 import Projects from "./Pages/ProjectList";
 import Docs from "./Pages/Docs";
 import Workspace from "./Pages/Workspace";
+import TextEditor from "./Components/Editor"
 import { AuthProvider, useAuth } from "./firbase/context/authContext";
+import {auth} from "./firbase/firebaseConfig"
+
+
 
 function App() {
+
   return (
     <AuthProvider>
       <Router>
@@ -141,6 +146,7 @@ function AppRoutes() {
           <Route path="/project" element={<Projects />} />
           <Route path="/Workspace" element={<Workspace />} />
           <Route path="/Projects/:projectId/docs" element={<Docs />} />
+          <Route path="/editor/:documentId" element={<TextEditor />} />
         </>
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />

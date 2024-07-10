@@ -10,44 +10,72 @@ import { fetchProjectFiles, fetchProjects } from '../firbase/firestoreUtil';
 import { useAuth } from '../firbase/context/authContext';
 
 
-const columns = [
-  { id: 'id', label: 'Id No.', minWidth: 100 },
+const columnsInProgress = [
+  { id: 'slNo', label: 'Sl. No.', minWidth: 50 },
   { id: 'name', label: 'File Name', minWidth: 100 },
   { id: 'projectName', label: 'Project Name', minWidth: 150 },
   { id: 'uploadedAt', label: 'Date Created', minWidth: 100 },
   { id: 'edit', label: '', minWidth: 100, align: 'right' },
 ];
 
+const columnsCompleted = [
+  { id: 'slNo', label: 'Sl. No.', minWidth: 50 },
+  { id: 'name', label: 'File Name', minWidth: 100 },
+  { id: 'projectName', label: 'Project Name', minWidth: 150 },
+  { id: 'uploadedAt', label: 'Date Created', minWidth: 100 },
+];
+
 const Workspace = () => {
   const [tabValue, setTabValue] = useState(0);
   const [inProgressFiles, setInProgressFiles] = useState([]);
   const [completedFiles, setCompletedFiles] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { currentUser } = useAuth();
 
-
   useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
       try {
-        const projects = await fetchProjects();
+        const projectsData = await fetchProjects();
+        const projectsWithFiles = await Promise.all(
+          projectsData.map(async (project) => {
+            const projectFiles = await fetchProjectFiles(project.id);
+            return { ...project, files: projectFiles };
+          })
+        );
+
+        setProjects(projectsWithFiles);
+
         const allInProgressFiles = [];
         const allCompletedFiles = [];
 
-        await Promise.all(
-          projects.map(async (project) => {
-            const projectFiles = await fetchProjectFiles(project.id);
+        projectsWithFiles.forEach((project) => {
+          const projectInProgressFiles = project.files.filter(
+            (file) => file.status === 3 && file.assignedTo === currentUser.uid
+          );
+          const projectCompletedFiles = project.files.filter(
+            (file) => file.status === 4 && file.assignedTo === currentUser.uid
+          );
 
-            const projectInProgressFiles = projectFiles.filter(file => file.status === 3 && file.assignedTo === currentUser.uid);
-            const projectCompletedFiles = projectFiles.filter(file => file.status === 4 && file.assignedTo === currentUser.uid);
-
-            projectInProgressFiles.forEach(file => allInProgressFiles.push({ ...file, projectName: project.name }));
-            projectCompletedFiles.forEach(file => allCompletedFiles.push({ ...file, projectName: project.name }));
-          })
-        );
+          projectInProgressFiles.forEach((file) =>
+            allInProgressFiles.push({
+              ...file,
+              projectId: project.id,
+              projectName: project.name,
+            })
+          );
+          projectCompletedFiles.forEach((file) =>
+            allCompletedFiles.push({
+              ...file,
+              projectId: project.id,
+              projectName: project.name,
+            })
+          );
+        });
 
         setInProgressFiles(allInProgressFiles);
         setCompletedFiles(allCompletedFiles);
@@ -60,8 +88,7 @@ const Workspace = () => {
     };
 
     getFiles();
-  }, [tabValue, currentUser.uid]);
-
+  }, [currentUser.uid]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -95,8 +122,8 @@ const Workspace = () => {
 
       <TabPanel value={tabValue} index={0}>
         <Table2
-          columns={columns}
-          rows={inProgressFiles}
+          columns={columnsInProgress}
+          rows={inProgressFiles.map((file, index) => ({ ...file, slNo: index + 1 }))}
           page={page}
           rowsPerPage={rowsPerPage}
           handleChangePage={handleChangePage}
@@ -106,8 +133,8 @@ const Workspace = () => {
 
       <TabPanel value={tabValue} index={1}>
         <Table2
-          columns={columns}
-          rows={completedFiles}
+          columns={columnsCompleted}
+          rows={completedFiles.map((file, index) => ({ ...file, slNo: index + 1 }))}
           page={page}
           rowsPerPage={rowsPerPage}
           handleChangePage={handleChangePage}
