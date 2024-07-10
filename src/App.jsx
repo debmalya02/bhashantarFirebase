@@ -19,7 +19,6 @@
 // import PermissionManage from "./Pages/PermissionManage";
 // import RoleManagement from "./Pages/RoleManagement";
 // import UserManagement from "./Pages/userManagement";
-// import DocumentList from "./Pages/DocumentList";
 // import ProjectList from "./Pages/ProjectList";
 // import Editor from "./Components/Editor";
 // import { v4 as uuidV4 } from "uuid";
@@ -104,14 +103,16 @@
 
 
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Header from "./AppBar";
 import Home from "./Pages/Admin/AdminHome";
-// import AssignRoleComponent from "./assignRole";
-import { AuthProvider } from "./firbase/context/authContext";
+import UserHome from "./Pages/Users/UserHome"
+import Projects from "./Pages/ProjectList";
+import Docs from "./Pages/Docs";
+import Workspace from "./Pages/Workspace";
+import { AuthProvider, useAuth } from "./firbase/context/authContext";
 
 function App() {
   return (
@@ -119,17 +120,35 @@ function App() {
       <Router>
         <Header />
         <div className="w-full h-screen flex flex-col">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/home" element={<Home />} />
-            {/* <Route path="/assignRole" element={<AssignRoleComponent />} /> */}
-          </Routes>
+          <AppRoutes />
         </div>
       </Router>
     </AuthProvider>
   );
 }
 
+function AppRoutes() {
+  const { userLoggedIn } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      {userLoggedIn ? (
+        <>
+          <Route path="/home" element={<Home />} />
+          <Route path="/userhome" element={<UserHome />} />
+          <Route path="/project" element={<Projects />} />
+          <Route path="/Workspace" element={<Workspace />} />
+          <Route path="/Projects/:projectId/docs" element={<Docs />} />
+        </>
+      ) : (
+        <Route path="*" element={<Navigate to="/login" />} />
+      )}
+      <Route path="/" element={<Login />} />
+    </Routes>
+  );
+}
+
 export default App;
+

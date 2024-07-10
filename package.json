@@ -22,7 +22,7 @@
     "@reduxjs/toolkit": "^2.2.5",
     "axios": "^1.7.2",
     "farmhash": "^3.3.1",
-    "firebase": "^10.12.2",
+    "firebase": "^10.12.3",
     "firebase-admin": "^12.2.0",
     "glob": "^10.4.2",
     "js-cookie": "^3.0.5",
